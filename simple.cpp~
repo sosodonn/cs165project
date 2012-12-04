@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 
 	// Part E ===================================================
 	// RSA *PEM_read_bio_RSA_PUBKEY(BIO *bp, RSA **x, pem_password_cb *cb, void *u);
-
+	RSA *rsa2  = PEM_read_bio_RSA_PUBKEY(publickey, NULL, 0, NULL);
 
 
 	//Chain on the input
