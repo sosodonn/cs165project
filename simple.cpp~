@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
 
 	//This section uses BIOs to write a copy of infile.txt to outfile.txt
 	//  and to send the hash of infile.txt to the command window.
-	//  It is a barebones implementation with little to no error checking.
+	// It is a barebones implementation with little to no error checking.
 
 	//The SHA1 hash BIO is chained to the input BIO, though it could just
 	//  as easily be chained to the output BIO instead.
