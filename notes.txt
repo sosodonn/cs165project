@@ -1,0 +1,24 @@
+izbicki.me/public/cs/cs165/project/project-base.tar.gz
+
+
+// Put this into Server
+int buff_len = 0;
+char buff[BUFFER_SIZE];
+buff_len = SSL_read( ssl, buff, BUFFER_SIZE );
+
+memset( buff, 0 , sizeof(buff));
+
+// Client
+SLL_write
+
+// Both
+init SSL
+creat cts
+set up ssl
+
+// Server
+gen DH params
+create server BIO
+SSL_read
+
+port number has to be greater than 1024
