@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
 	// It is a barebones implementation with little to no error checking.
 
 	//The SHA1 hash BIO is chained to the input BIO, though it could just
-	//  as easily be chained to the output BIO instead.
+	// as easily be chained to the output BIO instead
 
 	char infilename[] = "nguyen.txt";
 	char outfilename[] = "outfile.txt";
