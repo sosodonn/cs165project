@@ -95,15 +95,22 @@ int main(int argc, char** argv)
 	printf("    (Now listening on port: %s)\n", port);
 
     //-------------------------------------------------------------------------
-	// 2. Receive a random number (the challenge) from the client
-	printf("2. Waiting for client to connect and send challenge...");
-    
-    //SSL_read
-    string challenge="";
-    
-	printf("DONE.\n");
-	printf("    (Challenge: \"%s\")\n", challenge.c_str());
-
+  // 2. Receive a random number (the challenge) from the client
+  printf("2. Waiting for client to connect and send challenge...");
+  
+  //SSL_read
+  string challenge="";
+  
+  char buff[BUFFER_SIZE];
+  memset( buff, 0 , sizeof(buff));
+  // SSL_read(SSL *ssl, void *buf, int num)
+  int buff_len  = SSL_read( ssl, buff, BUFFER_SIZE );
+  
+  challenge = buff;
+  
+  printf("DONE.\n");
+  printf("    (Challenge: \"%s\")\n", challenge.c_str());
+  
     //-------------------------------------------------------------------------
 	// 3. Generate the SHA1 hash of the challenge
 	printf("3. Generating SHA1 hash...");

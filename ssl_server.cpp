@@ -116,8 +116,12 @@ int main(int argc, char** argv)
 	printf("3. Generating SHA1 hash...");
 
 	//BIO_new(BIO_s_mem());
+	BIO *another = BIO_new(BIO_s_mem());
 	//BIO_write
+	// write to buff again
+	BIO_write(bin,buff,BUFFER_SIZE);
 	//BIO_new(BIO_f_md());
+	BIO *hashing = BIO_new(BIO_f_md());
 	//BIO_set_md;
 	//BIO_push;
 	//BIO_gets;

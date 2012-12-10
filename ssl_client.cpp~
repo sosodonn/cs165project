@@ -7,6 +7,7 @@
 #include <string>
 #include <time.h>               // to seed random number generator
 #include <sstream>          // stringstreams
+#include <iostream>
 using namespace std;
 
 #include <openssl/ssl.h>	// Secure Socket Layer library
@@ -92,19 +93,32 @@ int main(int argc, char** argv)
 	// 2. Send the server a random number
 	printf("2.  Sending challenge to the server...");
     
-    string randomNumber="31337";
-	//SSL_write
-    
-    printf("SUCCESS.\n");
-	printf("    (Challenge sent: \"%s\")\n", randomNumber.c_str());
+  string randomNumber="31337";
+  //SSL_write
+  //SSL_write(SSL *ssl, const void *buf, int num);
+  char buffer[BUFFER_SIZE];
+  // Use the memset to write to buff can't just set the string to the buffer
+  memset( buffer, 0 , sizeof(buffer));
+  memcpy( buffer,randomNumber.c_str(), sizeof(buffer));
+  int buff_len = SSL_write( ssl, buffer, BUFFER_SIZE );
+  
+  printf("SUCCESS.\n");
+  printf("    (Challenge sent: \"%s\")\n", randomNumber.c_str());
 
     //-------------------------------------------------------------------------
 	// 3a. Receive the signed key from the server
 	printf("3a. Receiving signed key from server...");
 
-    char* buff="FIXME";
+    //char* buff="FIXME";
+   char *buff[BUFFER_SIZE];
     int len=5;
-	//SSL_read;
+  //SSL_read;
+  // SSL_read(SSL *ssl, void *buf, int num)
+	char recieved[BUFFER_SIZE];
+	memset(recieved,0,BUFFER_SIZE);
+
+	// should read from SSL to write it to recieved
+	SSL_read(ssl,recieved,BUFFER_SIZE);
 
 	printf("RECEIVED.\n");
 	printf("    (Signature: \"%s\" (%d bytes))\n", buff2hex((const unsigned char*)buff, len).c_str(), len);
@@ -113,16 +127,30 @@ int main(int argc, char** argv)
 	// 3b. Authenticate the signed key
 	printf("3b. Authenticating key...");
 
-	//BIO_new(BIO_s_mem())
-	//BIO_write
-	//BIO_new_file
-	//PEM_read_bio_RSA_PUBKEY
-	//RSA_public_decrypt
-	//BIO_free
-	
-	string generated_key="";
+	string generated_key="rsapublickey.pem";
 	string decrypted_key="";
-    
+   
+	//BIO_new(BIO_s_mem())
+	//Creates new BIO
+	BIO *newBIO = BIO_new(BIO_s_mem());
+	//BIO_write
+	BIO_write(newBIO,recieved,BUFFER_SIZE);
+	//BIO_new_file
+	BIO *newfile = BIO_new_file(generated_key.c_str(),"r");
+	//PEM_read_bio_RSA_PUBKEY
+	RSA *rsaPub = PEM_read_bio_RSA_PUBKEY(newfile,NULL,NULL,NULL);
+	//RSA_public_decrypt
+  //RSA_public_decrypt(int flen, unsigned char *from,unsigned char *to, RSA *rsa, int padding);
+	int checking =   RSA_public_decrypt(RSA_size(rsa), (const unsigned char* )buff, (unsigned char* )received, rsaPub, RSA_PKCS1_PADDING);
+	// If should be able to read something in if it is one it will be an error
+	if( checking == -1 )
+	{
+		cout << "ERROR! Did not Authenticate" << endl;
+		return 0;
+	}
+	//BIO_free
+	BIO_free(newfile);	
+
 	printf("AUTHENTICATED\n");
 	printf("    (Generated key: %s)\n", generated_key.c_str());
 	printf("    (Decrypted key: %s)\n", decrypted_key.c_str());
