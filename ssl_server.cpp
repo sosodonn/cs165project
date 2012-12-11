@@ -116,19 +116,23 @@ int main(int argc, char** argv)
 	printf("3. Generating SHA1 hash...");
 
 	//BIO_new(BIO_s_mem());
-	BIO *another = BIO_new(BIO_s_mem());
+	BIO *research = BIO_new(BIO_s_mem());
 	//BIO_write
 	// write to buff again
-	BIO_write(bin,buff,BUFFER_SIZE);
+	BIO_write(research,buff,BUFFER_SIZE);
 	//BIO_new(BIO_f_md());
 	BIO *hashing = BIO_new(BIO_f_md());
 	//BIO_set_md;
+	BIO_set_md(hashing,EVP_sha1());
 	//BIO_push;
+	BIO_push(hashing,research);
 	//BIO_gets;
 
     int mdlen=0;
 	string hash_string = "";
-
+	char newbuff[EVP_MAX_MD_SIZE];
+	mdlen = BIO_gets(hashing, newbuff, EVP_MAX_MD_SIZE);
+	hash_string = buff2hex((const unsigned char*)newbuff, mdlen);
 	printf("SUCCESS.\n");
 	printf("    (SHA1 hash: \"%s\" (%d bytes))\n", hash_string.c_str(), mdlen);
 
@@ -138,10 +142,17 @@ int main(int argc, char** argv)
 	printf("4. Signing the key...");
 
     //PEM_read_bio_RSAPrivateKey
-    //RSA_private_encrypt
+	// Put 
+	RSA *rsa;
+	unsigned char buff_read_encryption[128];
+	memset(buff_read_encryption,0,sizeof(buff_read_encryption));
 
-    int siglen=0;
-    char* signature="FIXME";
+	char RSAprivatefile[] = "rsaprivatekey.pem";
+ 	BIO *privatekey = BIO_new_file(RSAprivatefile,"r");
+	rsa = PEM_read_bio_RSAPrivateKey(privatekey,NULL,NULL,NULL);
+    //RSA_private_encrypt
+  int siglen = RSA_private_encrypt(RSA_size(rsa)-11,(const unsigned char*)newbuff,buff_read_encryption,rsa,RSA_PKCS1_PADDING);
+    char* signature=(char*)buff_read_encryption;
 
     printf("DONE.\n");
     printf("    (Signed key length: %d bytes)\n", siglen);
@@ -151,8 +162,15 @@ int main(int argc, char** argv)
 	// 5. Send the signature to the client for authentication
 	printf("5. Sending signature to client for authentication...");
 
+  // Create a new buffer, clear it and copy the signature to it
+  char sig_buf[BUFFER_SIZE];
+  memset(sig_buf,0, sizeof(sig_buf));
+  memcpy(sig_buf, signature, sizeof(sig_buf)); 
+
 	//BIO_flush
+	BIO_flush(research);
 	//SSL_write
+	SSL_write(ssl,sig_buf,BUFFER_SIZE);
 
     printf("DONE.\n");
     
